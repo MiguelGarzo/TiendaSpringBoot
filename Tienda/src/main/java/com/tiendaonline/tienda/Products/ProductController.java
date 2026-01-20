@@ -1,5 +1,8 @@
 package com.tiendaonline.tienda.products;
 
+import com.tiendaonline.tienda.products.dto.ProductRequestDTO;
+import com.tiendaonline.tienda.products.dto.ProductResponseDTO;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,7 +45,8 @@ public class ProductController {
 
     // Maps the POST method to create products (I tried with PostMan)
     @PostMapping
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
+    public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO product) {
+
         service.save(product);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }

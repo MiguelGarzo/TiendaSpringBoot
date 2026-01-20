@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 
 // Make a table in PostgreSQL
 @Entity
+@Table(name = "products")
 
 // Make the Getters
 @Getter
@@ -25,12 +26,11 @@ import java.math.BigDecimal;
 // Make the Setters
 @Setter
 
-// Make a empty constructor needed for JPA
+// Make an empty constructor needed for JPA
 @NoArgsConstructor
 
 //Make a full constructor with all the attributes
 @AllArgsConstructor
-@Table(name = "products")
 public class Product {
     
     // Define the PrimaryKey as autogenerate in PostgreSQL
@@ -39,7 +39,6 @@ public class Product {
     private Long id;
 
     @NotBlank(message = "Product name is required")
-
     @Column(nullable = false)
     private String name;
     @NotNull(message = "Product price is required")
