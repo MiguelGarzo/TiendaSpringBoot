@@ -1,5 +1,7 @@
 package com.tiendaonline.tienda.products;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -33,8 +35,9 @@ public class ProductController {
 
     // Maps the POST method to create products (I tried with PostMan)
     @PostMapping
-    public Product createProduct(@RequestBody Product product) {
-        return service.save(product);
+    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+        service.save(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
     
     // Maps the PUT method to update products (I tried with PostMan)
@@ -42,5 +45,12 @@ public class ProductController {
     @PutMapping("/{id}")
     public Product updateProduct(@PathVariable Long id, @RequestBody Product product) {
         return service.update(id, product);
+    }
+
+    // Mapping DELETE
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteProduct(@PathVariable Long id){
+        service.delete(id);
+        return ResponseEntity.ok("Product deleted successfully");
     }
 }

@@ -40,4 +40,10 @@ public class ProductService {
 
         return repository.save(cProduct);
     }
+
+    // Method to delete a product by it's id
+    public void delete(Long id){
+        Product cProduct = findById(id);
+        repository.delete(cProduct);
+    }
 }
