@@ -1,12 +1,12 @@
 package com.tiendaonline.tienda.products.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Getter
-@AllArgsConstructor
+@Setter
 public class ProductResponseDTO {
 
     private Long id;

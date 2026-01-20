@@ -32,13 +32,13 @@ public class ProductController {
 
     // Maps the GET method to list products(I tried with PostMan)
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
+    public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
         return ResponseEntity.ok(service.getAll());
     }
 
     // Maps the GET method to list products by the required id (I tried with PostMan)
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id) {
 
         return ResponseEntity.ok(service.findById(id));
     }
@@ -47,14 +47,14 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO product) {
 
-        service.save(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(product);
+        ProductResponseDTO response = service.save(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
     // Maps the PUT method to update products (I tried with PostMan)
     // You have to insert your URL with the /id of the product you want to update, then make a RAW file with the updates.
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @Valid @RequestBody Product product) {
+    public ProductResponseDTO updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO product) {
         return service.update(id, product);
     }
 
