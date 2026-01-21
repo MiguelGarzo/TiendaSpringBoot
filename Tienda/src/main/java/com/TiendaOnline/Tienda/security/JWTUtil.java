@@ -21,4 +21,8 @@ public class JWTUtil {
                 .compact();
     }
 
+    public static Key getKey() {
+        return key;
+    }
+
 }
