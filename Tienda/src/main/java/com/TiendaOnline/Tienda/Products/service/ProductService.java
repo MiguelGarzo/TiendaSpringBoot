@@ -1,5 +1,8 @@
-package com.tiendaonline.tienda.products;
+package com.tiendaonline.tienda.products.service;
 
+import com.tiendaonline.tienda.products.entity.Product;
+import com.tiendaonline.tienda.products.ProductNotFoundException;
+import com.tiendaonline.tienda.products.repository.ProductRepository;
 import com.tiendaonline.tienda.products.dto.ProductRequestDTO;
 import com.tiendaonline.tienda.products.dto.ProductResponseDTO;
 import org.springframework.stereotype.Service;

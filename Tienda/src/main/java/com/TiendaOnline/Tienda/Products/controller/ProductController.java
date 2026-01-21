@@ -1,5 +1,6 @@
-package com.tiendaonline.tienda.products;
+package com.tiendaonline.tienda.products.controller;
 
+import com.tiendaonline.tienda.products.service.ProductService;
 import com.tiendaonline.tienda.products.dto.ProductRequestDTO;
 import com.tiendaonline.tienda.products.dto.ProductResponseDTO;
 import jakarta.validation.Valid;
