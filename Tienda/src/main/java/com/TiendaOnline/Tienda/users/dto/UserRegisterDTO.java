@@ -1,5 +1,8 @@
 package com.tiendaonline.tienda.users.dto;
 
+import com.tiendaonline.tienda.users.Role;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -17,8 +20,5 @@ public class UserRegisterDTO {
 
     @NotBlank
     private String username;
-
-    @NotBlank
-    private String role;
 
 }

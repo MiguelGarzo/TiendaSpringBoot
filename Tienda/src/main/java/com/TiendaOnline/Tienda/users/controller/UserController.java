@@ -22,6 +22,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> register(@RequestBody UserRegisterDTO dto) {
+        System.out.println("REGISTER HIT");
         return ResponseEntity.status(HttpStatus.CREATED).body(service.register(dto));
     }
 

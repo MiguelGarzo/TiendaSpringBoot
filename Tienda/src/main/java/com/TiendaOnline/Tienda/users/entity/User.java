@@ -1,5 +1,6 @@
 package com.tiendaonline.tienda.users.entity;
 
+import com.tiendaonline.tienda.users.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -38,6 +39,11 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private String role;
+    @NotBlank(message = "Username is required")
+    private String username;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
 }
