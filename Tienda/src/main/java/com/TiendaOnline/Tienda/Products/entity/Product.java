@@ -43,7 +43,7 @@ public class Product {
     private String name;
     @NotNull(message = "Product price is required")
     @Positive(message = "Price must be more than 0")
-    @Column(nullable = false)
+    @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
     @NotNull(message = "Product stock is required")
     @PositiveOrZero(message = "Stock cannot be negative")

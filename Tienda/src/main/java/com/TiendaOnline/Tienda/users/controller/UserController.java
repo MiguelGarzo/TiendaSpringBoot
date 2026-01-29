@@ -6,10 +6,8 @@ import com.tiendaonline.tienda.users.dto.UserResponseDTO;
 import com.tiendaonline.tienda.users.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
@@ -29,5 +27,10 @@ public class UserController {
     public ResponseEntity<String> login(@RequestBody UserLoginDTO dto) {
         String token = service.login(dto);
         return ResponseEntity.ok(token);
+    }
+
+    @GetMapping("/admin/test")
+    public ResponseEntity<String> adminTest() {
+        return ResponseEntity.ok("Admin ok");
     }
 }
