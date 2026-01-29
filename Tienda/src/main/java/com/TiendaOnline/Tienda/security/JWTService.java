@@ -13,4 +13,8 @@ public class JWTService {
     public boolean isTokenValid(String token, UserDetails userDetails) {
         return JWTUtil.isTokenValid(token, userDetails);
     }
+
+    public String extractRole(String token) {
+        return JWTUtil.extractRole(token);
+    }
 }
