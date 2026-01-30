@@ -1,31 +1,41 @@
 package com.tiendaonline.tienda.cart.service;
 
+import com.tiendaonline.tienda.cart.dto.CartItemResponseDTO;
+import com.tiendaonline.tienda.cart.dto.CartResponseDTO;
 import com.tiendaonline.tienda.cart.entity.Cart;
 import com.tiendaonline.tienda.cart.entity.CartItem;
+import com.tiendaonline.tienda.cart.repository.CartItemRepository;
 import com.tiendaonline.tienda.cart.repository.CartRepository;
 import com.tiendaonline.tienda.products.entity.Product;
 import com.tiendaonline.tienda.products.repository.ProductRepository;
 import com.tiendaonline.tienda.users.entity.User;
 import com.tiendaonline.tienda.users.repository.UserRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CartService {
 
     private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
     public CartService(
             CartRepository cartRepository,
+            CartItemRepository cartItemRepository,
             ProductRepository productRepository,
             UserRepository userRepository
     ) {
         this.cartRepository = cartRepository;
+        this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
     }
@@ -50,25 +60,57 @@ public class CartService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        Optional<CartItem> existingItem = cart.getItems().stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
-                .findFirst();
+        CartItem item = cartItemRepository.findByCartAndProduct(cart, product)
+                .orElseGet(() -> {
+                    CartItem newitem = new CartItem();
+                    newitem.setCart(cart);
+                    newitem.setProduct(product);
+                    newitem.setQuantity(0);
+                    newitem.setPrice(product.getPrice());
+                    return newitem;
+                });
 
-        if (existingItem.isPresent()) {
-            existingItem.get().setQuantity(
-                    existingItem.get().getQuantity() + 1
-            );
-        } else {
-            CartItem item = new CartItem();
-            item.setCart(cart);
-            item.setProduct(product);
-            item.setQuantity(1);
-            item.setPrice(product.getPrice());
-
-            cart.getItems().add(item);
-        }
+        item.setQuantity(item.getQuantity() + 1);
 
         cartRepository.save(cart);
+    }
+
+    public CartResponseDTO getCartByUserEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Cart cart = cartRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+        return toResponse(cart);
+    }
+
+    private CartResponseDTO toResponse(Cart cart) {
+        CartResponseDTO dto = new CartResponseDTO();
+        dto.setId(cart.getId());
+
+        List<CartItemResponseDTO> items = cart.getItems().stream().map(item -> {
+            CartItemResponseDTO itemResponseDTO = new CartItemResponseDTO();
+            itemResponseDTO.setProductId(item.getProduct().getId());
+            itemResponseDTO.setProductName(item.getProduct().getName());
+            itemResponseDTO.setPrice(item.getProduct().getPrice());
+            itemResponseDTO.setQuantity(itemResponseDTO.getQuantity());
+            itemResponseDTO.setSubtotal(
+                    item.getProduct().getPrice()
+                            .multiply(BigDecimal.valueOf(item.getQuantity()))
+            );
+            return itemResponseDTO;
+        }).toList();
+
+        dto.setItems(items);
+
+        BigDecimal total = items.stream()
+                .map(CartItemResponseDTO::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        dto.setTotal(total);
+
+        return dto;
     }
 
 }
