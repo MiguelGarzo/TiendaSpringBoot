@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class CartService {
 
     private final CartRepository cartRepository;
@@ -72,7 +74,7 @@ public class CartService {
 
         item.setQuantity(item.getQuantity() + 1);
 
-        cartRepository.save(cart);
+        cartItemRepository.save(item);
     }
 
     public CartResponseDTO getCartByUserEmail(String email) {
@@ -94,7 +96,7 @@ public class CartService {
             itemResponseDTO.setProductId(item.getProduct().getId());
             itemResponseDTO.setProductName(item.getProduct().getName());
             itemResponseDTO.setPrice(item.getProduct().getPrice());
-            itemResponseDTO.setQuantity(itemResponseDTO.getQuantity());
+            itemResponseDTO.setQuantity(item.getQuantity());
             itemResponseDTO.setSubtotal(
                     item.getProduct().getPrice()
                             .multiply(BigDecimal.valueOf(item.getQuantity()))
