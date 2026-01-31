@@ -115,4 +115,33 @@ public class CartService {
         return dto;
     }
 
+    public void removeProduct(Long productId) {
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String email = auth.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Cart cart = cartRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        CartItem item = cartItemRepository.findByCartAndProduct(cart, product)
+                .orElseThrow(() -> new RuntimeException("Cart Item not found"));
+
+        if (item.getQuantity() <= 1) {
+            cartItemRepository.delete(item);
+        } else {
+            item.setQuantity(item.getQuantity() - 1);
+            cartItemRepository.save(item);
+        }
+
+    }
+
+
+
 }
