@@ -3,6 +3,7 @@ package com.tiendaonline.tienda.orders.service;
 import com.tiendaonline.tienda.cart.entity.Cart;
 import com.tiendaonline.tienda.cart.entity.CartItem;
 import com.tiendaonline.tienda.cart.repository.CartRepository;
+import com.tiendaonline.tienda.orders.OrderModificationException;
 import com.tiendaonline.tienda.orders.OrderStatus;
 import com.tiendaonline.tienda.orders.dto.OrderItemResponseDTO;
 import com.tiendaonline.tienda.orders.dto.OrderResponseDTO;
@@ -10,10 +11,12 @@ import com.tiendaonline.tienda.orders.entity.Order;
 import com.tiendaonline.tienda.orders.entity.OrderItem;
 import com.tiendaonline.tienda.orders.repository.OrderItemRepository;
 import com.tiendaonline.tienda.orders.repository.OrderRepository;
+import com.tiendaonline.tienda.products.ProductNotFoundException;
 import com.tiendaonline.tienda.products.entity.Product;
 import com.tiendaonline.tienda.products.repository.ProductRepository;
 import com.tiendaonline.tienda.users.entity.User;
 import com.tiendaonline.tienda.users.repository.UserRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -117,6 +120,103 @@ public class OrderService {
 
             return dto;
 
+    }
+
+    public List<OrderResponseDTO> getOrdersByEmail(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return orderRepository.findByUser(user)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+
+    }
+
+    public OrderResponseDTO cancelOrder(Long orderId, String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new OrderModificationException("You cannot cancel this order");
+        }
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new OrderModificationException("Only PENDING orders can be cancelled");
+        }
+
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProduct();
+            product.setStock(
+                    product.getStock() + item.getQuantity()
+            );
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+
+        return toResponse(orderRepository.save(order));
+    }
+
+    public OrderResponseDTO payOrder(Long orderId, String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new OrderModificationException("You cannot pay this order");
+        }
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new OrderModificationException("Only PENDING orders can be paid");
+        }
+
+        order.setStatus(OrderStatus.PAID);
+
+        return toResponse(orderRepository.save(order));
+    }
+
+    public List<OrderResponseDTO> getAllOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public OrderResponseDTO getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        return toResponse(order);
+    }
+
+    public OrderResponseDTO updateOrderStatus(Long id, OrderStatus status) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        OrderStatus cStatus = order.getStatus();
+
+        if (cStatus == OrderStatus.CANCELLED || cStatus == OrderStatus.COMPLETED) {
+            throw new OrderModificationException("This order cannot be modified");
+        }
+
+        if (cStatus == OrderStatus.PAID && status != OrderStatus.SHIPPED) {
+            throw new OrderModificationException("PAID orders can only be SHIPPED");
+        }
+
+        if (cStatus == OrderStatus.SHIPPED && status != OrderStatus.COMPLETED) {
+            throw new OrderModificationException("SHIPPED orders can only be COMPLETED");
+        }
+
+        order.setStatus(status);
+        return toResponse(orderRepository.save(order));
     }
 
 }

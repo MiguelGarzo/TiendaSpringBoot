@@ -25,7 +25,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/users/register", "/users/login").permitAll()
                         .requestMatchers("/products/**").permitAll()
-                        .requestMatchers("/users/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
