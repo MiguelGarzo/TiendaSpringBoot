@@ -219,4 +219,17 @@ public class OrderService {
         return toResponse(orderRepository.save(order));
     }
 
+    public void markOrderAsPaidFromStripe(Long orderId) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            return; // idempotencia: Stripe puede llamar varias veces
+        }
+
+        order.setStatus(OrderStatus.PAID);
+        orderRepository.save(order);
+    }
+
 }

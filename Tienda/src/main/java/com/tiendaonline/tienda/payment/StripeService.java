@@ -23,11 +23,16 @@ public class StripeService {
         Stripe.apiKey = apiKey;
     }
 
-    public PaymentIntent createPaymentIntent(BigDecimal amount, String currency) throws StripeException {
+    public PaymentIntent createPaymentIntent(BigDecimal amount, String currency, Long orderId) throws StripeException {
         Map<String, Object> params = new HashMap<>();
         params.put("amount", amount.multiply(BigDecimal.valueOf(100)).longValue());
         params.put("currency", currency);
         params.put("payment_method_types", List.of("card"));
+
+
+        Map <String, String> metadata = new HashMap<>();
+        metadata.put("orderId", orderId.toString());
+        params.put("metadata", metadata);
 
         return PaymentIntent.create(params);
     }
