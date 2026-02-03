@@ -26,6 +26,9 @@ public class SecurityConfig {
                         .requestMatchers("/users/register", "/users/login").permitAll()
                         .requestMatchers("/products/**").permitAll()
                         .requestMatchers("/webhooks/stripe").permitAll()
+                        .requestMatchers("/v3/api-docs/**",
+                                                  "/swagger-ui/**",
+                                                  "/swagger-ui.html").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/orders/**").authenticated()
                         .anyRequest().authenticated()

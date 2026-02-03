@@ -6,6 +6,7 @@ import com.tiendaonline.tienda.products.dto.ProductResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +32,7 @@ public class ProductController {
         this.service = service;
     }
 
-    // Maps the GET method to list products(I tried with PostMan)
+    @CrossOrigin(origins ="http://localhost:3000")
     @GetMapping
     public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
         return ResponseEntity.ok(service.getAll());
