@@ -1,5 +1,8 @@
 package com.tiendaonline.tienda.users.service;
 
+import com.tiendaonline.tienda.exceptions.ApiError;
+import com.tiendaonline.tienda.exceptions.InvalidInputException;
+import com.tiendaonline.tienda.exceptions.NotExistsException;
 import com.tiendaonline.tienda.security.JWTUtil;
 import com.tiendaonline.tienda.users.Role;
 import com.tiendaonline.tienda.users.dto.UserLoginDTO;
@@ -11,7 +14,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -48,10 +50,10 @@ public class UserService implements UserDetailsService {
 
     public String login(UserLoginDTO dto) {
         User user = repository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotExistsException("User with email: " + dto.getEmail() + "not found"));
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid Password");
+            throw new InvalidInputException("Invalid Password");
         }
 
         return JWTUtil.generateToken(user.getEmail(), user.getRole());
@@ -60,7 +62,7 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = repository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new NotExistsException("User with email: " + email + "not found"));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),

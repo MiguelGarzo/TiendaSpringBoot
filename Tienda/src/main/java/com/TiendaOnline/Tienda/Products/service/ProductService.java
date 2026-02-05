@@ -1,7 +1,7 @@
 package com.tiendaonline.tienda.products.service;
 
+import com.tiendaonline.tienda.exceptions.NotExistsException;
 import com.tiendaonline.tienda.products.entity.Product;
-import com.tiendaonline.tienda.products.ProductNotFoundException;
 import com.tiendaonline.tienda.products.repository.ProductRepository;
 import com.tiendaonline.tienda.products.dto.ProductRequestDTO;
 import com.tiendaonline.tienda.products.dto.ProductResponseDTO;
@@ -35,14 +35,14 @@ public class ProductService {
 
     // Function to find a product by its id, if there's no product found it send a Error Message.
     public ProductResponseDTO findById(Long id) {
-        Product product = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+        Product product = repository.findById(id).orElseThrow(() -> new NotExistsException("Product with id: " + id + "not found"));
         return toResponse(product);
     }
 
     // Method to update a product by its id
     public ProductResponseDTO update(Long id, ProductRequestDTO uProduct){
         // Asking for a Product by its id, it will be saved at the variable cProduct to update it.
-        Product cProduct = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+        Product cProduct = repository.findById(id).orElseThrow(() -> new NotExistsException("Product with id: " + id + "not found"));
 
         cProduct.setName(uProduct.getName());
         cProduct.setPrice(uProduct.getPrice());
@@ -53,7 +53,7 @@ public class ProductService {
 
     // Method to delete a product by its id
     public void delete(Long id){
-        Product cProduct = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+        Product cProduct = repository.findById(id).orElseThrow(() -> new NotExistsException("Product with id: " + id + "not found"));
         repository.delete(cProduct);
     }
 

@@ -6,6 +6,7 @@ import com.tiendaonline.tienda.cart.entity.Cart;
 import com.tiendaonline.tienda.cart.entity.CartItem;
 import com.tiendaonline.tienda.cart.repository.CartItemRepository;
 import com.tiendaonline.tienda.cart.repository.CartRepository;
+import com.tiendaonline.tienda.exceptions.NotExistsException;
 import com.tiendaonline.tienda.products.entity.Product;
 import com.tiendaonline.tienda.products.repository.ProductRepository;
 import com.tiendaonline.tienda.users.entity.User;
@@ -50,7 +51,7 @@ public class CartService {
         String email = auth.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotExistsException("User with email: " + email + "not found"));
 
         Cart cart = cartRepository.findByUser(user)
                 .orElseGet(() -> {
@@ -60,7 +61,7 @@ public class CartService {
                 });
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new NotExistsException("Product with id: " + productId + "not found"));
 
         CartItem item = cartItemRepository.findByCartAndProduct(cart, product)
                 .orElseGet(() -> {
@@ -79,10 +80,10 @@ public class CartService {
 
     public CartResponseDTO getCartByUserEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotExistsException("User with email: " + email + "not found"));
 
         Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new NotExistsException("No cart for user with id: " + user.getId() + "has found"));
 
         return toResponse(cart);
     }
@@ -122,16 +123,16 @@ public class CartService {
         String email = auth.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotExistsException("User with email: " + email + "not found"));
 
         Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new NotExistsException("No cart for user with id:" + user.getId() + "has found"));
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new NotExistsException("Product with id: " + productId + "not found"));
 
         CartItem item = cartItemRepository.findByCartAndProduct(cart, product)
-                .orElseThrow(() -> new RuntimeException("Cart Item not found"));
+                .orElseThrow(() -> new NotExistsException("Item with id: " + product.getId() + "not found in cart with id: " + cart.getId()));
 
         if (item.getQuantity() <= 1) {
             cartItemRepository.delete(item);

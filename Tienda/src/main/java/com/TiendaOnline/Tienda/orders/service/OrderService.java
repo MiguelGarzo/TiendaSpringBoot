@@ -3,20 +3,20 @@ package com.tiendaonline.tienda.orders.service;
 import com.tiendaonline.tienda.cart.entity.Cart;
 import com.tiendaonline.tienda.cart.entity.CartItem;
 import com.tiendaonline.tienda.cart.repository.CartRepository;
-import com.tiendaonline.tienda.orders.OrderModificationException;
+import com.tiendaonline.tienda.exceptions.EmptyException;
+import com.tiendaonline.tienda.exceptions.NoStockException;
+import com.tiendaonline.tienda.exceptions.NotExistsException;
+import com.tiendaonline.tienda.exceptions.OrderModificationException;
 import com.tiendaonline.tienda.orders.OrderStatus;
 import com.tiendaonline.tienda.orders.dto.OrderItemResponseDTO;
 import com.tiendaonline.tienda.orders.dto.OrderResponseDTO;
 import com.tiendaonline.tienda.orders.entity.Order;
 import com.tiendaonline.tienda.orders.entity.OrderItem;
-import com.tiendaonline.tienda.orders.repository.OrderItemRepository;
 import com.tiendaonline.tienda.orders.repository.OrderRepository;
-import com.tiendaonline.tienda.products.ProductNotFoundException;
 import com.tiendaonline.tienda.products.entity.Product;
 import com.tiendaonline.tienda.products.repository.ProductRepository;
 import com.tiendaonline.tienda.users.entity.User;
 import com.tiendaonline.tienda.users.repository.UserRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,13 +46,13 @@ public class OrderService {
 
     public OrderResponseDTO createOrder(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotExistsException("User with email: " + email + "not found"));
 
         Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new NotExistsException("Cart for user id: " + user.getId() + "not found"));
 
         if (cart.getItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new EmptyException("Cart is empty");
         }
 
         Order order = new Order();
@@ -66,7 +66,7 @@ public class OrderService {
             Product product = item.getProduct();
 
             if (product.getStock() < item.getQuantity()) {
-                throw new RuntimeException("Not enough stock for product: " + product.getName());
+                throw new NoStockException("Not enough stock for product: " + product.getName());
             }
 
             product.setStock(product.getStock() - item.getQuantity());
@@ -125,7 +125,7 @@ public class OrderService {
     public List<OrderResponseDTO> getOrdersByEmail(String email) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotExistsException("User with email: " + email + "not found"));
 
         return orderRepository.findByUser(user)
                 .stream()
@@ -137,10 +137,10 @@ public class OrderService {
     public OrderResponseDTO cancelOrder(Long orderId, String email) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotExistsException("User with email: " + email + "not found"));
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new NotExistsException("Order with id: " + orderId + "not found"));
 
         if (!order.getUser().getId().equals(user.getId())) {
             throw new OrderModificationException("You cannot cancel this order");
@@ -165,10 +165,10 @@ public class OrderService {
     public OrderResponseDTO payOrder(Long orderId, String email) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotExistsException("User with email: " + email + "not found"));
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new NotExistsException("Order with id: " + orderId + "not found"));
 
         if (!order.getUser().getId().equals(user.getId())) {
             throw new OrderModificationException("You cannot pay this order");
@@ -192,14 +192,14 @@ public class OrderService {
 
     public OrderResponseDTO getOrderById(Long id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new NotExistsException("Order with id: " + id + "not found"));
 
         return toResponse(order);
     }
 
     public OrderResponseDTO updateOrderStatus(Long id, OrderStatus status) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new NotExistsException("Order with id: " + id + "not found"));
 
         OrderStatus cStatus = order.getStatus();
 
@@ -222,7 +222,7 @@ public class OrderService {
     public void markOrderAsPaidFromStripe(Long orderId) {
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new NotExistsException("Order with id: " + orderId + "not found"));
 
         if (order.getStatus() != OrderStatus.PENDING) {
             return; // idempotencia: Stripe puede llamar varias veces

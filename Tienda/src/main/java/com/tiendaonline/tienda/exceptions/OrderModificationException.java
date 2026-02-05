@@ -1,4 +1,4 @@
-package com.tiendaonline.tienda.orders;
+package com.tiendaonline.tienda.exceptions;
 
 public class OrderModificationException extends RuntimeException {
     public OrderModificationException(String message) {
